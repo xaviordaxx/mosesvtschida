@@ -177,7 +177,6 @@ def bot_help(update, context):
 
 
 botcmds = [
-        (f'{BotCommands.HelpCommand}','Get Detailed Help'),
         (f'{BotCommands.MirrorCommand}', 'Start Mirroring'),
         (f'{BotCommands.TarMirrorCommand}','Start mirroring and upload as .tar'),
         (f'{BotCommands.ZipMirrorCommand}','Start mirroring and upload as .zip'),
@@ -194,7 +193,8 @@ botcmds = [
         (f'{BotCommands.StatsCommand}','Bot Usage Stats'),
         (f'{BotCommands.PingCommand}','Ping the Bot'),
         (f'{BotCommands.RestartCommand}','Restart the bot [owner/sudo only]'),
-        (f'{BotCommands.LogCommand}','Get the Bot Log [owner/sudo only]')
+        (f'{BotCommands.LogCommand}','Get the Bot Log [owner/sudo only]'),
+        (f'{BotCommands.HelpCommand}','Get Detailed Help')
     ]
 
 
