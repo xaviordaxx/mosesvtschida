@@ -161,11 +161,7 @@ class GoogleDriveHelper:
 
     def switchServiceAccount(self):
         global SERVICE_ACCOUNT_INDEX
-        service_account_count = len(os.listdir("accounts"))
-        if SERVICE_ACCOUNT_INDEX == service_account_count - 1:
-            SERVICE_ACCOUNT_INDEX = 0
-        self.sa_count += 1
-        SERVICE_ACCOUNT_INDEX += 1
+        SERVICE_ACCOUNT_INDEX = randrange(len(os.listdir("accounts")))
         LOGGER.info(f"Switching to {SERVICE_ACCOUNT_INDEX}.json service account")
         self.__service = self.authorize()
 
@@ -255,10 +251,12 @@ class GoogleDriveHelper:
 
 
     def upload(self, file_name: str):
+        global SERVICE_ACCOUNT_INDEX
         self.is_downloading = False
         self.is_uploading = True
         if USE_SERVICE_ACCOUNTS:
             self.service_account_count = len(os.listdir("accounts"))
+            SERVICE_ACCOUNT_INDEX = randrange(len(os.listdir("accounts")))
         self.__listener.onUploadStarted()
         file_dir = f"{DOWNLOAD_DIR}{self.__listener.message.message_id}"
         file_path = f"{file_dir}/{file_name}"
@@ -384,12 +382,14 @@ class GoogleDriveHelper:
 
 
     def clone(self, link):
+        global SERVICE_ACCOUNT_INDEX
         self.is_cloning = True
         self.start_time = time.time()
         self.total_files = 0
         self.total_folders = 0
         if USE_SERVICE_ACCOUNTS:
             self.service_account_count = len(os.listdir("accounts"))
+            SERVICE_ACCOUNT_INDEX = randrange(len(os.listdir("accounts")))
         try:
             file_id = self.getIdFromUrl(link)
         except (KeyError,IndexError):
@@ -546,9 +546,11 @@ class GoogleDriveHelper:
 
 
     def authorize(self):
+        global SERVICE_ACCOUNT_INDEX
         # Get credentials
         credentials = None
         if not USE_SERVICE_ACCOUNTS:
+            SERVICE_ACCOUNT_INDEX = randrange(len(os.listdir("accounts")))
             if os.path.exists(self.__G_DRIVE_TOKEN_FILE):
                 with open(self.__G_DRIVE_TOKEN_FILE, 'rb') as f:
                     credentials = pickle.load(f)
@@ -612,14 +614,19 @@ class GoogleDriveHelper:
                 if name != '':
                     query += f"name contains '{name}' and "
         query += "trashed = false"
-        response = self.__service.files().list(supportsTeamDrives=True,
-                                               includeTeamDriveItems=True,
-                                               q=query,
-                                               spaces='drive',
-                                               pageSize=200,
-                                               fields='files(id, name, mimeType, size)',
-                                               orderBy='name asc').execute()
-        return response
+        return (
+            self.__service.files()
+            .list(
+                supportsTeamDrives=True,
+                includeTeamDriveItems=True,
+                q=query,
+                spaces='drive',
+                pageSize=200,
+                fields='files(id, name, mimeType, size)',
+                orderBy='name asc',
+            )
+            .execute()
+        )
 
 
     def drive_list(self, fileName, stopDup=False):
@@ -648,7 +655,7 @@ class GoogleDriveHelper:
                         msg += f"<b><a href={sfurl}>Drive Link</a></b>"
                     else:
                         msg += f"<b><a href={furl}>Drive Link</a></b>"
-                    if INDEX_URL[index] is not None:
+                    if INDEX_URLS[index] is not None:
                         url_path = requests.utils.quote(f'{file.get("name")}')
                         url = f'{INDEX_URLS[index]}/{url_path}/'
                         if SHORTENER is not None and SHORTENER_API is not None:
@@ -668,7 +675,7 @@ class GoogleDriveHelper:
                         msg += f"<b><a href={sfurl}>Drive Link</a></b>"
                     else:
                         msg += f"<b><a href={furl}>Drive Link</a></b>"
-                    if INDEX_URL[index] is not None:
+                    if INDEX_URLS[index] is not None:
                         url_path = requests.utils.quote(f'{file.get("name")}')
                         url = f'{INDEX_URLS[index]}/{url_path}'
                         urls = f'{INDEX_URLS[index]}/{url_path}?a=view'
@@ -809,9 +816,11 @@ class GoogleDriveHelper:
 
 
     def download(self, link):
+        global SERVICE_ACCOUNT_INDEX
         self.is_downloading = True
         file_id = self.getIdFromUrl(link)
         if USE_SERVICE_ACCOUNTS:
+            SERVICE_ACCOUNT_INDEX = randrange(len(os.listdir("accounts")))
             self.service_account_count = len(os.listdir("accounts"))
         self.updater = setInterval(self.update_interval, self._on_download_progress)
         try:
@@ -874,6 +883,7 @@ class GoogleDriveHelper:
 
     def download_file(self, file_id, path, filename, mime_type):
         request = self.__service.files().get_media(fileId=file_id)
+        filename = filename.replace('/', '')
         fh = io.FileIO('{}{}'.format(path, filename), 'wb')
         downloader = MediaIoBaseDownload(fh, request, chunksize = 65 * 1024 * 1024)
         done = False
