@@ -383,10 +383,7 @@ class GoogleDriveHelper:
 
     def clone(self, link):
         if ',' in link:
-            links = link.split(',')
-            for x in links:
-                x = x.replace(" ", "")
-                clone(x)
+            cloneFiles(link)
         global SERVICE_ACCOUNT_INDEX
         self.is_cloning = True
         self.start_time = time.time()
@@ -484,8 +481,13 @@ class GoogleDriveHelper:
                 msg = f"Error.\n{err}"
             return msg, ""
         return msg, InlineKeyboardMarkup(buttons.build_menu(2))
-
-
+    
+    def cloneFiles(link):
+        if ',' in link:
+            links = link.split(',')
+            for x in links:
+                x = x.replace(" ", "")
+                self.clone(x)
  
     def cloneFolder(self, name, local_path, folder_id, parent_id):
         LOGGER.info(f"Syncing: {local_path}")
