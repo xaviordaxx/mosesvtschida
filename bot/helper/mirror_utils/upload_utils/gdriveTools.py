@@ -489,7 +489,7 @@ class GoogleDriveHelper:
             for x in links:
                 x = x.replace(" ", "")
                 self.clone(link)
-    
+ 
  
     def cloneFolder(self, name, local_path, folder_id, parent_id):
         LOGGER.info(f"Syncing: {local_path}")
