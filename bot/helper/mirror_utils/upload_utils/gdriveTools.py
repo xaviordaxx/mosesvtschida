@@ -483,12 +483,12 @@ class GoogleDriveHelper:
         return msg, InlineKeyboardMarkup(buttons.build_menu(2))
 
 
- def cloneFiles(link):
-    if ',' in link:
-        links = link.split(',')
-        for x in links:
-            x = x.replace(" ", "")
-            self.clone(link)
+     def cloneFiles(link):
+        if ',' in link:
+            links = link.split(',')
+            for x in links:
+                x = x.replace(" ", "")
+                self.clone(link)
     
  
     def cloneFolder(self, name, local_path, folder_id, parent_id):
